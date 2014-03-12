@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<md:EntityDescriptor xmlns:md="urn:oasis:names:tc:SAML:2.0:metadata" xmlns:adfs="urm:adfs:claimrules" ID="_687d2b8d8211869490eff2741a0618e379c6c3f9a" entityID="https://code.it-kartellet.dk/test/">
+	<md:Extensions>
+	    <adfs:IssuanceTransformRules>Test</adfs:IssuanceTransformRules>
+	</md:Extensions>   
+   <md:RoleDescriptor xsi:type="fed:ApplicationServiceType" xmlns:fed="http://docs.oasis-open.org/wsfed/federation/200706" protocolSupportEnumeration="http://docs.oasis-open.org/wsfed/federation/200706" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+        <fed:TargetScopes>
+            <wsa:EndpointReference xmlns:wsa="http://www.w3.org/2005/08/addressing">
+                <wsa:Address>https://code.it-kartellet.dk/test/</wsa:Address>
+            </wsa:EndpointReference>
+        </fed:TargetScopes>
+        <fed:PassiveRequestorEndpoint>
+            <wsa:EndpointReference xmlns:wsa="http://www.w3.org/2005/08/addressing">
+                <wsa:Address>https://code.it-kartellet.dk/test/</wsa:Address>
+            </wsa:EndpointReference>
+        </fed:PassiveRequestorEndpoint>
+    </md:RoleDescriptor>
+    <md:SPSSODescriptor AuthnRequestsSigned="false" WantAssertionsSigned="false" protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol">
+        <md:SingleLogoutService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST" Location="https://code.damco.com/test/ADFSSSOEntry"/>
+        <md:SingleLogoutService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect" Location="https://code.damco.com/test/ADFSSSOEntry"/>
+        <md:NameIDFormat xmlns:md="urn:oasis:names:tc:SAML:2.0:metadata">urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress</md:NameIDFormat>
+        <md:NameIDFormat xmlns:md="urn:oasis:names:tc:SAML:2.0:metadata">urn:oasis:names:tc:SAML:2.0:nameid-format:transient</md:NameIDFormat>
+        <md:NameIDFormat xmlns:md="urn:oasis:names:tc:SAML:2.0:metadata">urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified</md:NameIDFormat>
+        <md:NameIDFormat xmlns:md="urn:oasis:names:tc:SAML:2.0:metadata">urn:oasis:names:tc:SAML:1.1:nameid-format:persistent</md:NameIDFormat>
+        <md:NameIDFormat xmlns:md="urn:oasis:names:tc:SAML:2.0:metadata">urn:oasis:names:tc:SAML:1.1:nameid-format:X509SubjectName</md:NameIDFormat>
+        <md:AssertionConsumerService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST" Location="https://code.damco.com/test/ADFSSSOEntry" index="0" isDefault="true"/>
+    </md:SPSSODescriptor>
+    <md:Organization>
+        <md:OrganizationName xml:lang="en">
+            IT-Kartellet ApS
+        </md:OrganizationName>
+        <md:OrganizationDisplayName xml:lang="en">
+            IT-Kartellet ApS
+        </md:OrganizationDisplayName>
+        <md:OrganizationURL xml:lang="en">
+            http://www.it-kartellet.dk/
+        </md:OrganizationURL>
+    </md:Organization>
+    <md:ContactPerson contactType="technical">
+        <md:Company>IT-Kartellet ApS</md:Company>
+        <md:GivenName>Troels Liebe</md:GivenName>
+        <md:SurName>Bentsen</md:SurName>
+        <md:EmailAddress>mailto:troels@it-kartellet.dk</md:EmailAddress>
+        <md:TelephoneNumber>+4551511838</md:TelephoneNumber>
+    </md:ContactPerson>
+</md:EntityDescriptor>
