@@ -1,12 +1,20 @@
-﻿using System.Xml.Serialization;
+﻿using System.Text;
+using System.Xml;
+using System.Xml.Serialization;
 
 namespace ADFSMetadataTool
 {
     [XmlType(AnonymousType = true, Namespace = "urn:oasis:names:tc:SAML:2.0:metadata")]
-    [XmlRoot(Namespace = "urn:oasis:names:tc:SAML:2.0:metadata", IsNullable = false)]
-    public class EntityDescriptor
+    [XmlRoot(Namespace = "urn:oasis:names:tc:SAML:2.0:metadata", IsNullable = false, ElementName = "EntityDescriptor")]
+    public class ADFSMetadata
     {
-        [XmlAttribute()]
+        [XmlNamespaceDeclarations]
+        public XmlSerializerNamespaces xmlns = new XmlSerializerNamespaces(new[] {
+            new XmlQualifiedName("md", "urn:oasis:names:tc:SAML:2.0:metadata"),
+            new XmlQualifiedName("adfs", "urm:adfs:claimrules")
+        });
+
+        [XmlAttribute()]    
         public string ID { get; set; }
 
         [XmlAttribute()]
@@ -17,6 +25,25 @@ namespace ADFSMetadataTool
         public EntityDescriptorSPSSODescriptor SPSSODescriptor { get; set; }
         public EntityDescriptorOrganization Organization { get; set; }
         public EntityDescriptorContactPerson ContactPerson { get; set; }
+
+        public static ADFSMetadata DeserializeFromFile(string filename)
+        {
+            XmlSerializer s = new XmlSerializer(typeof(ADFSMetadata));
+            using (System.IO.TextReader r = new System.IO.StreamReader(filename))
+            {
+                ADFSMetadata metadata = (ADFSMetadata)s.Deserialize(r);
+                return metadata;
+            }
+        }
+
+        public void SerializeToFile(string filename)
+        {
+            XmlSerializer s = new XmlSerializer(typeof(ADFSMetadata));
+            using (System.IO.TextWriter w = new System.IO.StreamWriter(filename, false, Encoding.UTF8))
+            {
+                s.Serialize(w, this, this.xmlns);
+            }
+        }
     }
 
     [XmlType(AnonymousType = true, Namespace = "urn:oasis:names:tc:SAML:2.0:metadata")]
@@ -34,6 +61,9 @@ namespace ADFSMetadataTool
     [XmlInclude(typeof(WSFederationApplicationServiceType))]
     public partial class EntityDescriptorRoleDescriptor
     {
+        [XmlNamespaceDeclarations]
+        public XmlSerializerNamespaces xmlns = new XmlSerializerNamespaces(new[] { new XmlQualifiedName("fed", "http://docs.oasis-open.org/wsfed/federation/200706") });
+
         [XmlElement(Namespace = "http://docs.oasis-open.org/wsfed/federation/200706")]
         public TargetScopes TargetScopes { get; set; }
 
@@ -56,6 +86,9 @@ namespace ADFSMetadataTool
     [XmlRoot(Namespace = "http://www.w3.org/2005/08/addressing", IsNullable = false)]
     public partial class EndpointReference
     {
+        [XmlNamespaceDeclarations]
+        public XmlSerializerNamespaces xmlns = new XmlSerializerNamespaces(new[] { new XmlQualifiedName("wsa", "http://www.w3.org/2005/08/addressing") });
+
         public string Address { get; set; }
     }
 
@@ -65,7 +98,6 @@ namespace ADFSMetadataTool
     {
         [XmlElement(Namespace = "http://www.w3.org/2005/08/addressing")]
         public EndpointReference EndpointReference { get; set; }
-       
     }
 
     [XmlType(AnonymousType = true, Namespace = "urn:oasis:names:tc:SAML:2.0:metadata")]
@@ -157,7 +189,7 @@ namespace ADFSMetadataTool
         public string GivenName { get; set; }
         public string SurName { get; set; }
         public string EmailAddress { get; set; }
-        public long TelephoneNumber { get; set; }
+        public string TelephoneNumber { get; set; }
 
         [XmlAttribute()]
         public string contactType { get; set; }

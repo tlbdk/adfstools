@@ -13,13 +13,8 @@ namespace ADFSMetadataTool
         static void Main(string[] args)
         {
             string samplespath = Path.GetFullPath(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + "../../../samples");
-
-            XmlSerializer s = new XmlSerializer(typeof(EntityDescriptor));
-            System.IO.TextReader r = new System.IO.StreamReader(Path.Combine(samplespath, "metadata-test.xml"));
-            EntityDescriptor metadata = (EntityDescriptor)s.Deserialize(r); 
-            r.Close();
-            Console.WriteLine(metadata.entityID);
-
+            //var metadata = ADFSMetadata.DeserializeFromFile(Path.Combine(samplespath, "metadata-test.xml"));
+            //metadata.SerializeToFile(Path.Combine(samplespath, "metadata-test2.xml"));
         }
     }
 }
