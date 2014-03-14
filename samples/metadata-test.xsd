@@ -1,0 +1,99 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:wsa="http://www.w3.org/2005/08/addressing" xmlns:fed="http://docs.oasis-open.org/wsfed/federation/200706" xmlns:md="urn:oasis:names:tc:SAML:2.0:metadata" xmlns:adfs="urm:adfs:claimrules" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="urn:oasis:names:tc:SAML:2.0:metadata" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:import namespace="urm:adfs:claimrules" schemaLocation="metadata-test1.xsd" />
+  <xs:import namespace="http://docs.oasis-open.org/wsfed/federation/200706" schemaLocation="metadata-test2.xsd" />
+  <xs:import namespace="http://www.w3.org/XML/1998/namespace" schemaLocation="metadata-test3.xsd" />
+  <xs:element name="EntityDescriptor">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="Extensions">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element ref="adfs:IssuanceTransformRules" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="RoleDescriptor">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element ref="fed:TargetScopes" />
+              <xs:element ref="fed:PassiveRequestorEndpoint" />
+            </xs:sequence>
+            <xs:attribute name="protocolSupportEnumeration" type="xs:string" use="required" />
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="SPSSODescriptor">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element maxOccurs="unbounded" name="SingleLogoutService">
+                <xs:complexType>
+                  <xs:attribute name="Binding" type="xs:string" use="required" />
+                  <xs:attribute name="Location" type="xs:string" use="required" />
+                </xs:complexType>
+              </xs:element>
+              <xs:element maxOccurs="unbounded" name="NameIDFormat" type="xs:string" />
+              <xs:element name="AssertionConsumerService">
+                <xs:complexType>
+                  <xs:attribute name="Binding" type="xs:string" use="required" />
+                  <xs:attribute name="Location" type="xs:string" use="required" />
+                  <xs:attribute name="index" type="xs:unsignedByte" use="required" />
+                  <xs:attribute name="isDefault" type="xs:boolean" use="required" />
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+            <xs:attribute name="AuthnRequestsSigned" type="xs:boolean" use="required" />
+            <xs:attribute name="WantAssertionsSigned" type="xs:boolean" use="required" />
+            <xs:attribute name="protocolSupportEnumeration" type="xs:string" use="required" />
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="Organization">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="OrganizationName">
+                <xs:complexType>
+                  <xs:simpleContent>
+                    <xs:extension base="xs:string">
+                      <xs:attribute ref="xml:lang" use="required" />
+                    </xs:extension>
+                  </xs:simpleContent>
+                </xs:complexType>
+              </xs:element>
+              <xs:element name="OrganizationDisplayName">
+                <xs:complexType>
+                  <xs:simpleContent>
+                    <xs:extension base="xs:string">
+                      <xs:attribute ref="xml:lang" use="required" />
+                    </xs:extension>
+                  </xs:simpleContent>
+                </xs:complexType>
+              </xs:element>
+              <xs:element name="OrganizationURL">
+                <xs:complexType>
+                  <xs:simpleContent>
+                    <xs:extension base="xs:string">
+                      <xs:attribute ref="xml:lang" use="required" />
+                    </xs:extension>
+                  </xs:simpleContent>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="ContactPerson">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="Company" type="xs:string" />
+              <xs:element name="GivenName" type="xs:string" />
+              <xs:element name="SurName" type="xs:string" />
+              <xs:element name="EmailAddress" type="xs:string" />
+              <xs:element name="TelephoneNumber" type="xs:long" />
+            </xs:sequence>
+            <xs:attribute name="contactType" type="xs:string" use="required" />
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+      <xs:attribute name="ID" type="xs:string" use="required" />
+      <xs:attribute name="entityID" type="xs:string" use="required" />
+    </xs:complexType>
+  </xs:element>
+</xs:schema>
