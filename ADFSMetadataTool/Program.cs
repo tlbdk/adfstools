@@ -12,7 +12,7 @@ using Microsoft.IdentityServer.PowerShell.Resources;
 using System.Management.Automation.Runspaces;
 using System.Management.Automation;
 using System.Text.RegularExpressions;
-
+using NDesk.Options;
 
 namespace ADFSMetadataTool
 {
@@ -23,14 +23,70 @@ namespace ADFSMetadataTool
             string exepath = Path.GetFullPath(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
             string samplespath = Path.GetFullPath(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + "../../../samples");
 
-            //ExportADFSMetadata(exepath);
-            ImportADFSMetadata(Path.Combine(exepath, "metadata-test.xml"));
-            /*
-            var metadata1 = ADFSMetadata.DeserializeFromFile(Path.Combine(samplespath, "metadata-test.xml"));
-            metadata1.SerializeToFile(Path.Combine(samplespath, "metadata-test2.xml"));
-            return 0;*/
+            bool show_help = false;
 
-            return 0;
+            string command = null;
+            var p = new OptionSet() {
+                { "h|help",  "show this message", v => show_help = v != null },
+            };
+
+            var arguments = new List<string>();
+            try
+            {
+                if (args.Length > 1)
+                {
+                    command = args[0];
+                    Array.Copy(args, 1, args, 0, args.Length - 1); // shift one value for the array
+                    arguments = p.Parse(args);
+                }
+
+                if (show_help || (command == "import" && arguments.Count == 0) || (command == "export" && arguments.Count != 1))
+                {
+                    Console.WriteLine("ADFSMetadataTool import|export pathtometadataxml");
+                    Console.WriteLine();
+                    Console.WriteLine("Options:");
+                    p.WriteOptionDescriptions(Console.Out);
+                    return 255;
+                }
+
+            }
+            catch (OptionException e)
+            {
+                Console.WriteLine("Unknown options or missing command");
+                return 255;
+            }
+
+            switch (command)
+            {
+                case "import":
+                    foreach (var argument in arguments)
+                    {
+                        if (File.Exists(argument))
+                        {
+                            Console.WriteLine("{0}", argument);
+                            ImportADFSMetadata(argument);
+                        }
+                        else if (Directory.Exists(argument))
+                        {
+                            string[] files = Directory.GetFiles(argument, "*.xml", SearchOption.AllDirectories);
+                            foreach (var file in files)
+                            {
+                                Console.WriteLine("{0}", file);
+                                ImportADFSMetadata(file);
+                            }
+                        }
+                    }
+                    
+                    
+                    return 0;
+                case "export":
+                    ExportADFSMetadata(arguments[0]);
+                    return 0;
+
+                default:
+                    Console.WriteLine("Unknown command");
+                    return 255;
+            }
         }
 
         public static void ImportADFSMetadata(string filename)
@@ -41,7 +97,8 @@ namespace ADFSMetadataTool
             addRelyingPartyTrustCommand.MetadataFile = filename;
             addRelyingPartyTrustCommand.Name = metadata.entityID;
 
-            if (metadata.Extensions != null) {
+            if (metadata.Extensions != null)
+            {
                 if (!String.IsNullOrEmpty(metadata.Extensions.displayName))
                 {
                     addRelyingPartyTrustCommand.Name = metadata.Extensions.displayName;
@@ -55,48 +112,6 @@ namespace ADFSMetadataTool
                     addRelyingPartyTrustCommand.SignatureAlgorithm = metadata.Extensions.signatureAlgorithm;
                 }
             }
-
-
-            /* 
-            addRelyingPartyTrustCommand.Identifier = new string[] { metadata.entityID };
-            if (metadata.RoleDescriptor != null) {
-                addRelyingPartyTrustCommand.WSFedEndpoint = new Uri(metadata.RoleDescriptor.PassiveRequestorEndpoint.EndpointReference.Address);
-            }
-
-            if (metadata.SPSSODescriptor != null)
-            {
-                addRelyingPartyTrustCommand.SignedSamlRequestsRequired = metadata.SPSSODescriptor.AuthnRequestsSigned;
-
-                var samlEndpoints = new List<SamlEndpoint>();
-                foreach (var endpoint in metadata.SPSSODescriptor.AssertionConsumerService)
-                {
-                    NewSamlEndpointCommand newSamlEndpointCommand = new NewSamlEndpointCommand();
-                    if (endpoint.Binding.EndsWith("POST"))
-                    {
-                        newSamlEndpointCommand.Binding = "POST";
-                    }
-                    else if (endpoint.Binding.EndsWith("Redirect"))
-                    {
-                        newSamlEndpointCommand.Binding = "Redirect";
-                    }
-                    else
-                    {
-                        throw new Exception("Unknown binding type in Endpoint" + endpoint.Binding);
-                    }
-
-                    newSamlEndpointCommand.Uri = new Uri(endpoint.Location);
-                    newSamlEndpointCommand.IsDefault = endpoint.isDefault;
-                    newSamlEndpointCommand.Index = endpoint.index;
-                    newSamlEndpointCommand.Protocol = "SAMLAssertionConsumer";
-                    IEnumerable commandResults = newSamlEndpointCommand.Invoke();
-                    foreach (SamlEndpoint commandResult in commandResults)
-                    {
-                        samlEndpoints.Add(commandResult);
-                    }
-                }
-
-                addRelyingPartyTrustCommand.SamlEndpoint = samlEndpoints.ToArray();
-            } */
 
             IEnumerable result = addRelyingPartyTrustCommand.Invoke();
             try
@@ -149,7 +164,7 @@ namespace ADFSMetadataTool
                 foreach (var id in rp.Identifier)
                 {
                     // Skip if disabled
-                    if(!rp.Enabled) { continue; }
+                    if (!rp.Enabled) { continue; }
 
                     var filename = MakeSafeFilename("metadata-" + id.Replace("https://", "").Replace("http://", "").TrimEnd(new[] { '/' }), '-') + ".xml";
 
@@ -167,13 +182,14 @@ namespace ADFSMetadataTool
                             "urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified",
                             "urn:oasis:names:tc:SAML:1.1:nameid-format:persistent",
                             "urn:oasis:names:tc:SAML:1.1:nameid-format:X509SubjectName"
-                        }; 
+                        };
 
                         var consumers = new List<EntityDescriptorSPSSODescriptorAssertionConsumerService>();
                         var logouts = new List<EntityDescriptorSPSSODescriptorSingleLogoutService>();
                         for (int i = 0; i < rp.SamlEndpoints.Length; i++)
                         {
-                            if (rp.SamlEndpoints[i].Protocol == "SAMLAssertionConsumer") {
+                            if (rp.SamlEndpoints[i].Protocol == "SAMLAssertionConsumer")
+                            {
                                 consumers.Add(new EntityDescriptorSPSSODescriptorAssertionConsumerService()
                                 {
                                     Binding = rp.SamlEndpoints[i].BindingUri.ToString(),
@@ -253,6 +269,12 @@ namespace ADFSMetadataTool
             }
         }
 
+
+        public static void showHelp(OptionSet p)
+        {
+
+        }
+
         public static string MakeSafeFilename(string filename, char replaceChar)
         {
             foreach (char c in System.IO.Path.GetInvalidFileNameChars())
@@ -262,7 +284,7 @@ namespace ADFSMetadataTool
             return filename;
         }
 
-        static T First<T>(IEnumerable<T> items)
+        public static T First<T>(IEnumerable<T> items)
         {
             using (IEnumerator<T> iter = items.GetEnumerator())
             {
