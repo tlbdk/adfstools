@@ -36,7 +36,7 @@ namespace ADFSMetadataTool
                 if (args.Length > 1)
                 {
                     command = args[0];
-                    Array.Copy(args, 1, args, 0, args.Length - 1); // shift one value for the array
+                    args = ArrayRemoveAt(args, 0); // shift one value for the array
                     arguments = p.Parse(args);
                 }
 
@@ -283,6 +283,20 @@ namespace ADFSMetadataTool
             }
             return filename;
         }
+
+        public static T[] ArrayRemoveAt<T>(T[] source, int idx)
+        {
+            T[] destination = new T[source.Length - 1];
+            if (idx > 0)
+                Array.Copy(source, 0, destination, 0, idx);
+
+            if (idx < source.Length - 1)
+                Array.Copy(source, idx + 1, destination, idx, source.Length - idx - 1);
+
+            return destination;
+        }
+
+
 
         public static T First<T>(IEnumerable<T> items)
         {
