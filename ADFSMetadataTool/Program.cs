@@ -27,7 +27,7 @@ namespace ADFSMetadataTool
 
             string command = null;
             var p = new OptionSet() {
-                { "h|help",  "show this message", v => show_help = v != null },
+                { "h|help", v => show_help = true },
             };
 
             var arguments = new List<string>();
@@ -39,13 +39,14 @@ namespace ADFSMetadataTool
                     args = ArrayRemoveAt(args, 0); // shift one value for the array
                     arguments = p.Parse(args);
                 }
+                else
+                {
+                    p.Parse(args);
+                }
 
                 if (show_help || (command == "import" && arguments.Count == 0) || (command == "export" && arguments.Count != 1))
                 {
-                    Console.WriteLine("ADFSMetadataTool import|export pathtometadataxml");
-                    Console.WriteLine();
-                    Console.WriteLine("Options:");
-                    p.WriteOptionDescriptions(Console.Out);
+                    ShowHelp(p);
                     return 255;
                 }
 
@@ -75,9 +76,12 @@ namespace ADFSMetadataTool
                                 ImportADFSMetadata(file);
                             }
                         }
+                        else
+                        {
+                            Console.WriteLine("Could not find arguments {0}", argument);
+                        }
                     }
-                    
-                    
+
                     return 0;
                 case "export":
                     ExportADFSMetadata(arguments[0]);
@@ -85,6 +89,7 @@ namespace ADFSMetadataTool
 
                 default:
                     Console.WriteLine("Unknown command");
+                    ShowHelp(p);
                     return 255;
             }
         }
@@ -97,6 +102,11 @@ namespace ADFSMetadataTool
             addRelyingPartyTrustCommand.MetadataFile = filename;
             addRelyingPartyTrustCommand.Name = metadata.entityID;
 
+            // Set default permissions
+            addRelyingPartyTrustCommand.IssuanceAuthorizationRules =
+                "@RuleTemplate = \"AllowAllAuthzRule\"\r\n"
+                + " => issue(Type = \"http://schemas.microsoft.com/authorization/claims/permit\", Value = \"true\");";
+
             if (metadata.Extensions != null)
             {
                 if (!String.IsNullOrEmpty(metadata.Extensions.displayName))
@@ -107,11 +117,17 @@ namespace ADFSMetadataTool
                 {
                     addRelyingPartyTrustCommand.IssuanceTransformRules = metadata.Extensions.issuanceTransformRules;
                 }
+                if (!String.IsNullOrEmpty(metadata.Extensions.issuanceAuthorizationRules))
+                {
+                    addRelyingPartyTrustCommand.IssuanceAuthorizationRules = metadata.Extensions.issuanceAuthorizationRules;
+                }
                 if (!String.IsNullOrEmpty(metadata.Extensions.signatureAlgorithm))
                 {
                     addRelyingPartyTrustCommand.SignatureAlgorithm = metadata.Extensions.signatureAlgorithm;
                 }
             }
+
+            
 
             IEnumerable result = addRelyingPartyTrustCommand.Invoke();
             try
@@ -170,7 +186,7 @@ namespace ADFSMetadataTool
 
                     Console.WriteLine("Exporting " + rp.Name + " to " + filename);
                     var metadata = new ADFSMetadata("abcd1", id);
-                    metadata.Extensions = new EntityDescriptorExtensions(rp.Name, rp.IssuanceTransformRules.Trim());
+                    metadata.Extensions = new EntityDescriptorExtensions(rp.Name, rp.IssuanceTransformRules.Trim(), rp.IssuanceAuthorizationRules.Trim());
                     metadata.Extensions.signatureAlgorithm = rp.SignatureAlgorithm;
 
                     if (rp.SamlEndpoints.Length > 0)
@@ -270,9 +286,15 @@ namespace ADFSMetadataTool
         }
 
 
-        public static void showHelp(OptionSet p)
+        public static void ShowHelp(OptionSet p = null)
         {
-
+            Console.WriteLine("ADFSMetadataTool import|export pathtometadataxml");
+            if (p != null)
+            {
+                Console.WriteLine();
+                Console.WriteLine("Options:");
+                p.WriteOptionDescriptions(Console.Out);
+            }
         }
 
         public static string MakeSafeFilename(string filename, char replaceChar)

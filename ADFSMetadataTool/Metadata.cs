@@ -62,16 +62,19 @@ namespace ADFSMetadataTool
         {
         }
 
-        public EntityDescriptorExtensions(string displayname, string issuancetransformrules)
+        public EntityDescriptorExtensions(string displayname, string issuancetransformrules, string issuanceAuthorizationRules)
         {
             this.displayName = displayname;
             this.issuanceTransformRules = issuancetransformrules;
+            this.issuanceAuthorizationRules = issuanceAuthorizationRules;
         }
 
         [XmlElement(Namespace = "urm:adfs")]
         public string displayName { get; set; }
         [XmlElement(Namespace = "urm:adfs")]
         public string issuanceTransformRules { get; set; }
+        [XmlElement(Namespace = "urm:adfs")]
+        public string issuanceAuthorizationRules { get; set; }
         [XmlElement(Namespace = "urm:adfs")]
         public string signatureAlgorithm { get; set; }
     }
