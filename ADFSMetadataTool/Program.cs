@@ -78,7 +78,7 @@ namespace ADFSMetadataTool
                         }
                         else
                         {
-                            Console.WriteLine("Could not find arguments {0}", argument);
+                            Console.WriteLine("Could not open directory {0}", argument);
                         }
                     }
 
@@ -127,8 +127,6 @@ namespace ADFSMetadataTool
                 }
             }
 
-            
-
             IEnumerable result = addRelyingPartyTrustCommand.Invoke();
             try
             {
@@ -137,8 +135,10 @@ namespace ADFSMetadataTool
             catch (Exception ex)
             {
                 Console.WriteLine("Relying party cannot be updated.");
-                Console.WriteLine(ex.Message);
-                Console.WriteLine(ex.StackTrace);
+                if (!ex.Message.StartsWith("MSIS7614: The name of the relying party trust must be unique")) {
+                    Console.WriteLine(ex.Message);
+                    Console.WriteLine(ex.StackTrace);
+                }
                 return;
             }
 
@@ -228,6 +228,12 @@ namespace ADFSMetadataTool
                         metadata.SPSSODescriptor.SingleLogoutService = logouts.ToArray();
                     }
 
+                    // TODO: Export RequestSigningCertificate
+                    if (rp.RequestSigningCertificate.Count > 0)
+                    {
+                        //Convert.ToBase64String(rp.RequestSigningCertificate[0].RawData);
+                    }
+
                     if (rp.WSFedEndpoint != null)
                     {
                         metadata.RoleDescriptor = new WSFederationApplicationServiceTypeRoleDescriptor();
@@ -260,7 +266,7 @@ namespace ADFSMetadataTool
                         }
                         else
                         {
-                            metadata.Organization = new EntityDescriptorOrganization(rp.OrganizationInfo, null, orgurl);
+                            metadata.Organization = new EntityDescriptorOrganization(rp.OrganizationInfo, " ", orgurl);
                         }
 
                         match = Regex.Match(rp.OrganizationInfo, @"\s*Technical Contact:\s+Name:\s*(.+?)\s*Emails:\s+(.+?)\s+Telephones:\s+(.+?)\s+", RegexOptions.Singleline);
@@ -277,6 +283,7 @@ namespace ADFSMetadataTool
                             metadata.ContactPerson.GivenName = techname;
                             metadata.ContactPerson.TelephoneNumber = techphone;
                             metadata.ContactPerson.EmailAddress = techemail;
+                            metadata.ContactPerson.contactType = "technical";
                         }
                     }
 

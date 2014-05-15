@@ -1,0 +1,1 @@
+ADFSMetadataTool.exe export C:\adfsinstall\metadata

@@ -273,7 +273,9 @@ namespace ADFSMetadataTool
     [XmlType(AnonymousType = true, Namespace = "urn:oasis:names:tc:SAML:2.0:metadata")]
     public partial class EntityDescriptorContactPerson
     {
-        public EntityDescriptorContactPerson() { }
+        public EntityDescriptorContactPerson() {
+            contactType = "technical";
+        }
  
         public string Company { get; set; }
         public string GivenName { get; set; }
